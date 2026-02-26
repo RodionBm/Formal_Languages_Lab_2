@@ -100,7 +100,7 @@ def classify(self):
         return "Type 1: Context-Sensitive Grammar"
     else:
         return "Type 0: Unrestricted Grammar"
-    ```
+```
 ### Determinism Check Method
 The determinism check verifies whether a finite automaton is deterministic by examining all transitions.
 ```python
@@ -113,7 +113,7 @@ def check_deterministic(self):
                 self.is_deterministic = False
                 print(f"Non-determinism found: δ({state}, {symbol}) = {targets}")
                 return
-                ```
+```
 ### NDFA to DFA Conversion Method
 The conversion from NDFA to DFA uses the subset construction algorithm. Each state in the DFA represents a set of states from the original NDFA.
 ```python
@@ -168,10 +168,10 @@ def to_dfa(self):
     dfa.is_deterministic = True
     
     return dfa
-    ```
-    ### String Generation Method
-    The string generation method implements a leftmost derivation algorithm to produce valid strings from the grammar.
-    ```python
+```
+  ### String Generation Method
+  The string generation method implements a leftmost derivation algorithm to produce valid strings from the grammar.
+  ```python
     def generate_string(self):
     current_string = "q0"
     max_steps = 100
@@ -203,7 +203,7 @@ def to_dfa(self):
             result += char
     
     return result if result else "ε"
-    ```
+```
 ### String Validation Method
 The string validation method determines whether a given string belongs to the language by simulating the finite automaton.
 ```python
@@ -228,7 +228,7 @@ def string_belongs_to_language(self, input_string: str) -> bool:
         current_states = next_states
     
     return bool(current_states & self.final_states)
-    ```
+```
 
 ---
 
@@ -302,5 +302,6 @@ Group: FAF-242
 Date: February 26, 2026
 
 ---
+
 
 *End of Report*
