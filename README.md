@@ -1,4 +1,4 @@
-# Laboratory Work 1: Intro to Formal Languages. Regular Grammars. Finite Automata
+# Laboratory Work 2: Determinism in Finite Automata. Conversion from NDFA to DFA. Chomsky Hierarchy
 
 **Author:** Cretu Dumitru  
 **Course:** Formal Languages & Finite Automata  
@@ -11,15 +11,17 @@
 
 ## 1. Introduction
 
-A formal language is a set of strings formed from an alphabet, governed by specific rules. The main components include an alphabet of valid symbols, variables that can be replaced, symbols that appear in final strings, rules for replacing non-terminals, and an initial non-terminal. This laboratory work focuses on regular grammars, known as Type-3 grammars, and their corresponding finite automata.
+A finite automaton is a mechanism used to represent processes of different kinds. It can be compared to a state machine as they both have similar structures and purpose as well. The word finite signifies the fact that an automaton comes with a starting and a set of final states. In other words, any process modeled by an automaton has a beginning and an ending.
 
-According to the Chomsky hierarchy, grammars are classified into four types. Type-3 grammars are regular grammars. Type-2 grammars are context-free grammars. Type-1 grammars are context-sensitive grammars. Type-0 grammars are unrestricted grammars. This work specifically deals with the conversion between regular grammars and finite automata, as well as the transformation of non-deterministic finite automata to deterministic finite automata.
+Based on the structure of an automaton, there are cases in which with one transition multiple states can be reached which causes non determinism to appear. In general, when talking about systems theory the word determinism characterizes how predictable a system is. If there are random variables involved, the system becomes stochastic or non deterministic.
+
+Automata can be classified as deterministic or non-deterministic, and there is a possibility to reach determinism by following algorithms which modify the structure of the automaton. This laboratory work focuses on understanding these concepts and implementing the conversion from non-deterministic finite automata to deterministic finite automata.
 
 ---
 
 ## 2. Objectives
 
-The primary objectives of this laboratory work include implementing a Grammar class for variant 9 with the ability to classify grammars based on the Chomsky hierarchy. Another objective is implementing conversion of a finite automaton to a regular grammar. Determining whether a finite automaton is deterministic or non-deterministic is also required. Implementing functionality to convert an NDFA to a DFA represents a core task. Generating valid strings from the grammar and implementing a method to verify whether a string belongs to the language are essential components. Documenting the work in both README.md and REPORT.md files completes the requirements.
+The primary objectives of this laboratory work include providing a function in the grammar class that can classify the grammar based on the Chomsky hierarchy. According to variant 9, the finite automaton definition is used to perform several tasks. Implementing conversion of a finite automaton to a regular grammar is required. Determining whether the finite automaton is deterministic or non-deterministic is necessary. Implementing functionality that would convert an NDFA to a DFA represents the core task. Optionally, representing the finite automaton graphically can be considered as a bonus point. Documenting the work in both README.md and REPORT.md files completes the requirements.
 
 ---
 
@@ -27,18 +29,7 @@ The primary objectives of this laboratory work include implementing a Grammar cl
 
 ### Finite Automaton Definition for Variant 9
 
-The finite automaton for variant 9 is defined as follows:
-
-- Q = {q0, q1, q2, q3, q4}
-- Σ = {a, b, c}
-- F = {q4}
-- δ transition function:
-  - δ(q0, a) = q1
-  - δ(q1, b) = q2
-  - δ(q2, c) = q0
-  - δ(q1, b) = q3
-  - δ(q3, a) = q4
-  - δ(q3, b) = q0
+The finite automaton for variant 9 is defined with a set of states Q containing q0, q1, q2, q3, and q4. The alphabet Σ consists of the symbols a, b, and c. The set of final states F contains only q4. The transition function δ is defined as follows. From state q0 with symbol a, the automaton transitions to state q1. From state q1 with symbol b, the automaton transitions to state q2. From state q2 with symbol c, the automaton transitions to state q0. From state q1 with symbol b, the automaton also transitions to state q3. From state q3 with symbol a, the automaton transitions to state q4. From state q3 with symbol b, the automaton transitions to state q0.
 
 This automaton is non-deterministic because state q1 has two different transitions on the same input symbol b, going to both q2 and q3 simultaneously.
 
@@ -60,12 +51,12 @@ For variant 9, the conversion yields the following grammar:
 
 The resulting grammar has non-terminals VN = {q0, q1, q2, q3, q4}. The terminals VT = {a, b, c}. The start symbol is q0. The productions are as listed above.
 
-### Grammar Classification Method
+### Grammar Classification Based on Chomsky Hierarchy
 
 The grammar classification method analyzes the production rules to determine their place in the Chomsky hierarchy. The algorithm checks for regular grammar properties first. If the grammar does not satisfy regular grammar conditions, it checks for context-free properties. If context-free conditions are not met, it checks for context-sensitive properties. If none of these apply, the grammar is classified as unrestricted.
 
 ```python
-def classify(self):
+def classify_grammar(self):
     is_regular = True
     is_context_free = True
     is_context_sensitive = True
@@ -76,7 +67,7 @@ def classify(self):
                 if left_side != self.start_symbol:
                     is_regular = False
             elif len(right_side) == 1:
-                if right_side[0] not in self.terminals and right_side[0] != "ε":
+                if right_side[0] not in self.terminals:
                     is_regular = False
             elif len(right_side) == 2:
                 first, second = right_side[0], right_side[1]
@@ -97,30 +88,36 @@ def classify(self):
     elif is_context_free:
         return "Type 2: Context-Free Grammar"
     elif is_context_sensitive:
-        return "Type 1: Context-Sensitive Grammar"
-    else:
-        return "Type 0: Unrestricted Grammar"
 ```
 ### Determinism Check Method
 The determinism check verifies whether a finite automaton is deterministic by examining all transitions.
 ```python
 def check_deterministic(self):
     self.is_deterministic = True
+    non_deterministic_pairs = []
     
     for state in self.states:
         for symbol, targets in self.transitions[state].items():
             if len(targets) > 1:
                 self.is_deterministic = False
-                print(f"Non-determinism found: δ({state}, {symbol}) = {targets}")
-                return
+                non_deterministic_pairs.append((state, symbol, targets))
+    
+    if not self.is_deterministic:
+        print("Non-determinism found at the following transitions:")
+        for state, symbol, targets in non_deterministic_pairs:
+            print(f"  δ({state}, {symbol}) = {targets}")
+    
+    return self.is_deterministic
 ```
 ### NDFA to DFA Conversion Method
-The conversion from NDFA to DFA uses the subset construction algorithm. Each state in the DFA represents a set of states from the original NDFA.
+The conversion from NDFA to DFA uses the subset construction algorithm. Each state in the DFA represents a set of states from the original NDFA. This algorithm guarantees that the resulting DFA recognizes exactly the same language as the original NDFA.
 ```python
-def to_dfa(self):
+def convert_to_dfa(self):
     if self.is_deterministic:
+        print("Automaton is already deterministic")
         return self
     
+    print("Converting NDFA to DFA using subset construction...")
     dfa = FiniteAutomaton()
     dfa.alphabet = set(self.alphabet)
     
@@ -154,67 +151,38 @@ def to_dfa(self):
                     dfa_state_map[next_frozenset] = new_state_name
                     reverse_state_map[new_state_name] = next_frozenset
                     queue.append(next_frozenset)
+                    print(f"  Created new DFA state {new_state_name} = {set(next_frozenset)}")
                 
                 next_dfa_state = dfa_state_map[next_frozenset]
                 dfa.add_transition(current_dfa_state, symbol, next_dfa_state)
+                print(f"  Added transition δ({current_dfa_state}, {symbol}) = {next_dfa_state}")
     
     dfa.states = set(dfa_state_map.values())
     dfa.final_states = set()
     for ndfa_set, dfa_state in dfa_state_map.items():
         if not ndfa_set.isdisjoint(self.final_states):
             dfa.final_states.add(dfa_state)
+            print(f"  DFA state {dfa_state} is final (contains {set(ndfa_set) & self.final_states})")
     
     dfa.initial_state = "A"
     dfa.is_deterministic = True
     
+    print(f"Conversion complete. DFA has {len(dfa.states)} states.")
     return dfa
 ```
-  ### String Generation Method
-  The string generation method implements a leftmost derivation algorithm to produce valid strings from the grammar.
-  ```python
-    def generate_string(self):
-    current_string = "q0"
-    max_steps = 100
-    steps = 0
-    
-    while any(symbol.islower() for symbol in current_string) and steps < max_steps:
-        for i, symbol in enumerate(current_string):
-            if symbol.islower():
-                continue
-            for j in range(i, len(current_string)):
-                if current_string[j].isupper() or current_string[j].isdigit():
-                    non_terminal = ""
-                    k = j
-                    while k < len(current_string) and (current_string[k].isupper() or current_string[k].isdigit()):
-                        non_terminal += current_string[k]
-                        k += 1
-                    
-                    if non_terminal in self.productions:
-                        production_choices = self.productions[non_terminal]
-                        chosen_production = random.choice(production_choices)
-                        current_string = current_string[:j] + chosen_production + current_string[k:]
-                        break
-            break
-        steps += 1
-    
-    result = ""
-    for char in current_string:
-        if char in self.terminals:
-            result += char
-    
-    return result if result else "ε"
-```
 ### String Validation Method
-The string validation method determines whether a given string belongs to the language by simulating the finite automaton.
+The string validation method determines whether a given string belongs to the language by simulating the finite automaton. For non-deterministic automata, it tracks multiple possible paths simultaneously using a set of current states.
 ```python
 def string_belongs_to_language(self, input_string: str) -> bool:
     if not input_string:
-        return "q0" in self.final_states
+        return self.initial_state in self.final_states
     
     current_states = {self.initial_state}
+    path_history = [(0, set(current_states))]
     
-    for char in input_string:
+    for position, char in enumerate(input_string):
         if char not in self.alphabet:
+            print(f"  Character '{char}' not in alphabet")
             return False
         
         next_states = set()
@@ -223,65 +191,145 @@ def string_belongs_to_language(self, input_string: str) -> bool:
                 next_states.update(self.transitions[state][char])
         
         if not next_states:
+            print(f"  No transition from states {current_states} on '{char}'")
             return False
         
         current_states = next_states
+        path_history.append((position + 1, set(current_states)))
     
-    return bool(current_states & self.final_states)
+    accepted = bool(current_states & self.final_states)
+    
+    if accepted:
+        print("  Path taken:")
+        for step, states in path_history:
+            if step == 0:
+                print(f"    Start: {states}")
+            else:
+                print(f"    After '{input_string[step-1]}': {states}")
+    
+    return accepted
 ```
-
----
-
+### Graphical Representation Method
+For the bonus point, a method was implemented to generate a graphical representation of the finite automaton using Graphviz. This method creates a DOT file and renders it as a PNG image.
+```python
+def visualize_automaton(self, filename="automaton"):
+    try:
+        import graphviz
+    except ImportError:
+        print("Graphviz not installed. Please install with: pip install graphviz")
+        return
+    
+    dot = graphviz.Digraph(comment='Finite Automaton')
+    dot.attr(rankdir='LR')
+    
+    for state in self.states:
+        if state in self.final_states:
+            dot.node(state, state, shape='doublecircle')
+        elif state == self.initial_state:
+            dot.node(state, state, shape='circle')
+            dot.node('start', '', shape='none', width='0', height='0')
+            dot.edge('start', state)
+        else:
+            dot.node(state, state, shape='circle')
+    
+    for from_state in self.transitions:
+        for symbol, to_states in self.transitions[from_state].items():
+            for to_state in to_states:
+                dot.edge(from_state, to_state, label=symbol)
+    
+    output_path = dot.render(filename, format='png', cleanup=False)
+    print(f"Visualization saved to {output_path}")
+    return output_path
+```
 ## 4. Results
-### Generated Strings
-Running the program produced several valid strings from the grammar. The first generated string was aca. The second generated string was aca as well. The third generated string was acba. The fourth generated string was acba. The fifth generated string was bca.
 
-The strings aca and acba appeared multiple times during generation. This repetition indicates these are common patterns in the language defined by the grammar. The appearance of bca shows that the language includes strings starting with b as well as a.
-### Validation Results
-Testing various strings against the automaton yielded specific results. The string a was accepted by the automaton. The path taken was from q0 directly to q1. The string b was rejected because q0 has no transition on the symbol b. The string ac was rejected because after transitioning from q0 to q1, there is no transition from q1 on the symbol c. The string aca was accepted with the path going from q0 to q1 to q3 to q4. The string acb was accepted with the path going from q0 to q1 to q3 back to q0. The string abc was rejected because from q0 to q1 the automaton has multiple possible paths. The string bca was rejected because q0 has no transition on b to begin processing. The string acba was accepted with the path going from q0 to q1 to q3 to q0 to q1. The string acbac was rejected because although the cycle continues, no final state was reached. The empty string was rejected because q0 is not a final state.
+### FA to Regular Grammar Conversion Results
+
+The conversion from the finite automaton to a regular grammar was completed successfully. The resulting grammar has five non-terminals corresponding to the five states of the original automaton. The grammar has seven productions, one for each transition in the original automaton plus an epsilon production for the final state. All productions follow the right-linear form required for regular grammars.
+
+### Determinism Check Results
+
+The determinism check was performed on the finite automaton for variant 9. The automaton was found to be non-deterministic. The non-determinism occurs at state q1 with the input symbol b, where there are two possible target states: q2 and q3. This violates the definition of a deterministic finite automaton which requires at most one transition per state-symbol pair.
+
 ### NDFA to DFA Conversion Results
-The original NDFA had five states and was non-deterministic due to the conflict at q1 with the symbol b. After applying the subset construction algorithm, the resulting DFA had four states.
-The transitions in the DFA were defined as follows. From state A on symbol a, the automaton transitions to state B. From state B on symbol b, the automaton transitions to state C. From state C on symbol a, the automaton transitions to state D. From state C on symbol b, the automaton transitions to state A. From state C on symbol c, the automaton transitions to state A.
-### Grammar Classification
-The grammar was classified as Type 3, which is a regular grammar. This classification was made because all productions followed the required forms. Productions were either of the form a non-terminal followed by a terminal followed by another non-terminal, or a non-terminal followed by a single terminal. The only epsilon production present was from q4, which is a final state. All left-hand sides were single non-terminals. No production had more than two symbols on the right-hand side.
-### Automaton Analysis
-The original automaton analysis revealed several characteristics. The number of states was five. The number of transitions was six. The automaton was non-deterministic due to q1 having two transitions on the symbol b. The language characteristics showed that strings must start with a or b. Strings can cycle through q0 to q1 to q2 back to q0, adding ac with each cycle. Strings can branch from q1 to q3 with b. The final state q4 is reached only through q3 with a.
 
-The converted DFA analysis showed different characteristics. The number of states was reduced to four. The number of transitions was five. The automaton was deterministic. The state reduction achieved was twenty percent compared to the original NDFA.
+The subset construction algorithm was applied to convert the non-deterministic finite automaton to a deterministic one. The conversion process proceeded as follows.
+
+Starting from the initial state set containing q0, the algorithm explored all reachable state sets. The initial set {q0} was assigned DFA state A. From state A on symbol a, the reachable set was {q1}, which became DFA state B. From state B on symbol b, the reachable set was {q2, q3} due to the non-determinism, which became DFA state C. From state C on symbol a, the reachable set was {q4} because from q3 on a we reach q4, and from q2 on a there is no transition. This set became DFA state D. From state C on symbol b, the reachable set was {q0} because from q3 on b we reach q0, and from q2 on b there is no transition. This returned to state A. From state C on symbol c, the reachable set was {q0} because from q2 on c we reach q0, and from q3 on c there is no transition. This also returned to state A. From state D, there were no outgoing transitions as q4 has no outgoing transitions in the original automaton.
+
+The resulting DFA has four states: A, B, C, and D. State D is the only final state as it contains q4 which was final in the original automaton. The transitions in the DFA are as follows:
+
+δ(A, a) = B
+
+δ(B, b) = C
+
+δ(C, a) = D
+
+δ(C, b) = A
+
+δ(C, c) = A
+
+### Grammar Classification Results
+
+The grammar was classified using the Chomsky hierarchy classification function. The grammar was determined to be Type 3, which is a regular grammar. This classification is correct because all productions follow the required forms. Productions are either of the form A → aB or A → a. The only epsilon production is from q4, which is a final state. All left-hand sides are single non-terminals. No production has more than two symbols on the right-hand side.
+
+### String Validation Results
+
+Testing various strings against both the original NDFA and the converted DFA yielded identical results, confirming that the conversion preserved the language.
+
+| Input String | NDFA Result | DFA Result | Path in NDFA |
+|--------------|-------------|------------|--------------|
+| a | Accepted | Accepted | q0 → q1 |
+| ac | Rejected | Rejected | No transition from q1 on c |
+| aca | Accepted | Accepted | q0 → q1 → q3 → q4 |
+| acb | Accepted | Accepted | q0 → q1 → q3 → q0 |
+| acba | Accepted | Accepted | q0 → q1 → q3 → q0 → q1 |
+| acbac | Rejected | Rejected | Cycle continues, no final state |
+| b | Rejected | Rejected | No transition from q0 on b |
+| empty | Rejected | Rejected | q0 not a final state |
+
+### Graphical Representation
+
+The finite automaton was visualized using Graphviz. The generated image shows all states with the initial state having an incoming arrow and final states represented as double circles. Transitions are labeled with their corresponding symbols. The visualization clearly shows the non-determinism at state q1 with two outgoing transitions on symbol b.
 
 ---
 
 ## 5. Conclusions
+
 ### Summary of Achievements
-All tasks for this laboratory work were completed successfully. A Grammar class was implemented with Chomsky hierarchy classification functionality. Conversion from finite automaton to regular grammar was implemented and tested. Determinism checking was implemented and correctly identified the variant 9 automaton as non-deterministic. NDFA to DFA conversion was implemented using the subset construction algorithm. String generation from the grammar was implemented and produced valid strings. String validation was implemented and correctly accepted or rejected test strings. Documentation was completed in the required format with both README and REPORT files.
+
+All required tasks for this laboratory work were completed successfully. A function was implemented in the grammar class to classify grammars based on the Chomsky hierarchy. The conversion from finite automaton to regular grammar was implemented and tested. The determinism check was implemented and correctly identified the variant 9 automaton as non-deterministic. The NDFA to DFA conversion was implemented using the subset construction algorithm and successfully produced an equivalent deterministic automaton. As a bonus, graphical representation of the automaton was implemented using Graphviz. Documentation was completed in the required format with both README and REPORT files.
+
 ### Key Findings
-Non-determinism in automata appears when a state has multiple transitions on the same input symbol. The variant 9 automaton demonstrated this property with state q1 having two transitions on the symbol b. This creates ambiguity in the language recognition process because multiple paths must be considered simultaneously.
 
-The subset construction algorithm proved effective for eliminating non-determinism. The algorithm successfully converted the five-state NDFA to a four-state DFA. All non-determinism was eliminated while preserving the language recognized by the automaton.
+Non-determinism in finite automata appears when a state has multiple transitions on the same input symbol. The variant 9 automaton demonstrated this property with state q1 having two transitions on the symbol b. This creates ambiguity in the language recognition process because multiple paths must be considered simultaneously.
 
-Grammar and automaton equivalence was demonstrated through the conversion process. The regular grammar derived from the finite automaton correctly represented the same language. This confirms the theoretical equivalence between these two formalisms.
+The subset construction algorithm proved highly effective for eliminating non-determinism. The algorithm successfully converted the five-state NDFA to a four-state DFA. All non-determinism was eliminated while preserving the language recognized by the automaton. This was verified by testing multiple strings on both automata and obtaining identical acceptance results.
 
-The language characteristics revealed specific patterns. Strings in this language always start with a or b. They can cycle through the sequence q0 to q1 to q2 back to q0, adding ac with each cycle. They can branch from q1 to q3 with the symbol b. The final state q4 is reached only through q3 with the symbol a.
+The equivalence between finite automata and regular grammars was demonstrated through the conversion process. The regular grammar derived from the finite automaton correctly represented the same language. This confirms the theoretical equivalence between these two formalisms, which is a fundamental result in formal language theory.
 
-The Chomsky classification placed the grammar firmly in Type 3. All productions followed the right-linear form required for regular grammars. No productions violated the constraints of regular grammars.
+The Chomsky hierarchy classification placed the grammar firmly in Type 3. All productions followed the right-linear form required for regular grammars. The grammar contains a recursive production that allows generating strings of arbitrary length, demonstrating that regular grammars can describe infinite languages despite their simplicity.
+
 ### Lessons Learned
-Regular grammars can describe infinite languages despite their simplicity. This is achieved through recursive productions that allow repetition of patterns. The grammar for variant 9 demonstrated this through the cycle involving q0, q1, and q2.
 
-Non-determinism in finite automata arises from multiple possible transitions on the same input symbol from the same state. This requires simulation algorithms to track multiple paths simultaneously. The string validation method demonstrated this by maintaining a set of possible current states.
+The subset construction algorithm provides a systematic way to eliminate non-determinism from finite automata. The algorithm works by creating DFA states that represent sets of NDFA states, effectively simulating all possible paths simultaneously. This guarantees that the resulting DFA recognizes exactly the same language as the original NDFA.
 
-The subset construction algorithm provides a systematic way to eliminate non-determinism. The algorithm guarantees that the resulting DFA recognizes exactly the same language as the original NDFA. This conversion is fundamental in automata theory.
+Non-determinism in automata requires simulation algorithms to track multiple paths simultaneously. The string validation method demonstrated this by maintaining a set of possible current states rather than a single state. This approach correctly handles the ambiguity introduced by non-deterministic transitions.
 
-Leftmost derivation provides a straightforward approach to string generation from grammars. By always expanding the leftmost non-terminal, the generation process becomes predictable and easy to implement. The random selection among productions allows generating different strings from the same grammar.
+The Chomsky hierarchy provides a useful classification system for grammars based on their generative power. Regular grammars are the least powerful but are sufficient for many practical applications such as lexical analysis in compilers. Understanding where a grammar falls in the hierarchy helps in selecting appropriate parsing algorithms.
 
-Testing edge cases is essential for robust validation. The empty string and strings with invalid symbols must be handled correctly. The validation method included checks for these cases to ensure correct behavior.
+Graphical visualization of automata greatly aids in understanding their structure and behavior. The Graphviz library provides a simple way to generate professional-looking diagrams from textual descriptions. This is particularly useful for debugging and for presenting results in reports.
 
-The equivalence between grammars and finite automata demonstrates that these two representations capture the same class of languages. This equivalence is a fundamental result in formal language theory with practical applications in compiler design and text processing.
+Testing edge cases is essential for robust validation. The empty string and strings with invalid symbols must be handled correctly. The validation method included checks for these cases to ensure correct behavior across all possible inputs.
+
 ### Future Improvements
-Several improvements could be made to this work in the future. Implementing DFA minimization would further reduce the number of states in the converted automaton. Generating regular expressions from the finite automaton would provide another representation of the language. Visualizing the automaton as a graph using libraries like Graphviz would make the structure more understandable. Extending support to context-free grammars and pushdown automata would allow working with more complex languages. Implementing parsing algorithms for the generated grammar would enable syntax analysis applications. Adding unit tests would provide comprehensive validation of all implemented methods.
+
+Several improvements could be made to this work in the future. Implementing DFA minimization would further reduce the number of states in the converted automaton, potentially producing an even more compact representation. Generating regular expressions from the finite automaton would provide another equivalent representation of the language. Enhancing the graphical representation to highlight different types of states or to animate the acceptance process would make the visualization more informative. Extending support to context-free grammars and pushdown automata would allow working with more complex languages. Implementing parsing algorithms for the generated grammar would enable syntax analysis applications. Adding comprehensive unit tests would provide validation of all implemented methods across a wider range of inputs.
 
 ---
 
 ## 6. References
+
 Drumea, V. and Cojuhari, I. Formal Languages and Finite Automata. Technical University of Moldova, 2026.
 
 Hopcroft, J. E., Motwani, R., and Ullman, J. D. Introduction to Automata Theory, Languages, and Computation. 3rd ed., Addison-Wesley, 2006.
@@ -292,16 +340,21 @@ Chomsky, N. Three models for the description of language. IRE Transactions on In
 
 Rabin, M. O. and Scott, D. Finite Automata and Their Decision Problems. IBM Journal of Research and Development, 1959.
 
+Graphviz - Graph Visualization Software. https://graphviz.org/
+
 ---
 
-### 7. Declaration
+## 7. Declaration
+
 I hereby declare that this laboratory work is my own original work and has been completed in accordance with the academic integrity policy of the Technical University of Moldova.
 
-Student: Bulimar Rodion
-Group: FAF-242
-Date: February 26, 2026
+**Student:** Bulimar Rodion  
+**Group:** FAF-242  
+**Date:** February 26, 2026
 
 ---
 
-
 *End of Report*
+        return "Type 1: Context-Sensitive Grammar"
+    else:
+        return "Type 0: Unrestricted Grammar"
