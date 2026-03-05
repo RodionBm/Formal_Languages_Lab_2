@@ -170,6 +170,9 @@ def convert_to_dfa(self):
     print(f"Conversion complete. DFA has {len(dfa.states)} states.")
     return dfa
 ```
+
+<img width="1210" height="440" alt="image" src="https://github.com/user-attachments/assets/f09a7913-a96f-4a8d-a448-133cd321e24f" />
+
 ### String Validation Method
 The string validation method determines whether a given string belongs to the language by simulating the finite automaton. For non-deterministic automata, it tracks multiple possible paths simultaneously using a set of current states.
 ```python
@@ -342,4 +345,5 @@ I hereby declare that this laboratory work is my own original work and has been 
         return "Type 1: Context-Sensitive Grammar"
     else:
         return "Type 0: Unrestricted Grammar"
+
 
