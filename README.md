@@ -304,27 +304,11 @@ All required tasks for this laboratory work were completed successfully. A funct
 
 Non-determinism in finite automata appears when a state has multiple transitions on the same input symbol. The variant 9 automaton demonstrated this property with state q1 having two transitions on the symbol b. This creates ambiguity in the language recognition process because multiple paths must be considered simultaneously.
 
-The subset construction algorithm proved highly effective for eliminating non-determinism. The algorithm successfully converted the five-state NDFA to a four-state DFA. All non-determinism was eliminated while preserving the language recognized by the automaton. This was verified by testing multiple strings on both automata and obtaining identical acceptance results.
+The subset construction algorithm proved highly effective for eliminating non-determinism. The algorithm successfully converted the five-state NDFA to a four-state DFA. 
 
 The equivalence between finite automata and regular grammars was demonstrated through the conversion process. The regular grammar derived from the finite automaton correctly represented the same language. This confirms the theoretical equivalence between these two formalisms, which is a fundamental result in formal language theory.
 
 The Chomsky hierarchy classification placed the grammar firmly in Type 3. All productions followed the right-linear form required for regular grammars. The grammar contains a recursive production that allows generating strings of arbitrary length, demonstrating that regular grammars can describe infinite languages despite their simplicity.
-
-### Lessons Learned
-
-The subset construction algorithm provides a systematic way to eliminate non-determinism from finite automata. The algorithm works by creating DFA states that represent sets of NDFA states, effectively simulating all possible paths simultaneously. This guarantees that the resulting DFA recognizes exactly the same language as the original NDFA.
-
-Non-determinism in automata requires simulation algorithms to track multiple paths simultaneously. The string validation method demonstrated this by maintaining a set of possible current states rather than a single state. This approach correctly handles the ambiguity introduced by non-deterministic transitions.
-
-The Chomsky hierarchy provides a useful classification system for grammars based on their generative power. Regular grammars are the least powerful but are sufficient for many practical applications such as lexical analysis in compilers. Understanding where a grammar falls in the hierarchy helps in selecting appropriate parsing algorithms.
-
-Graphical visualization of automata greatly aids in understanding their structure and behavior. The Graphviz library provides a simple way to generate professional-looking diagrams from textual descriptions. This is particularly useful for debugging and for presenting results in reports.
-
-Testing edge cases is essential for robust validation. The empty string and strings with invalid symbols must be handled correctly. The validation method included checks for these cases to ensure correct behavior across all possible inputs.
-
-### Future Improvements
-
-Several improvements could be made to this work in the future. Implementing DFA minimization would further reduce the number of states in the converted automaton, potentially producing an even more compact representation. Generating regular expressions from the finite automaton would provide another equivalent representation of the language. Enhancing the graphical representation to highlight different types of states or to animate the acceptance process would make the visualization more informative. Extending support to context-free grammars and pushdown automata would allow working with more complex languages. Implementing parsing algorithms for the generated grammar would enable syntax analysis applications. Adding comprehensive unit tests would provide validation of all implemented methods across a wider range of inputs.
 
 ---
 
@@ -358,3 +342,4 @@ I hereby declare that this laboratory work is my own original work and has been 
         return "Type 1: Context-Sensitive Grammar"
     else:
         return "Type 0: Unrestricted Grammar"
+
